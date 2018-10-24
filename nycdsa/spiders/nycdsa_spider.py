@@ -9,16 +9,16 @@ class NycdsaSpider(Spider):
 	start_urls = ['https://nycdatascience.com/blog/']
 	
 	def parse(self, response):
-		rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div') #for row in rows, [1] to [9]
-		pattern = './a[2]/@title' #or a/@title
-		for row in rows:
-			title = row.xpath(pattern).extract_first()
-			print (title)
-	
+		for num in [1,2]: #blog column 1 and 2
+			rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[%d]'%num) #for row in rows, [1] to [9] #this gets the first row
+			pattern = './a[2]/@title' #or a/@title
+			for row in rows:
+				title = row.xpath(pattern).extract_first()
+				print (title)
+
 		item = NycdsaItem()
 		item['title'] = title	
 		yield item 
-	
 """
 	def parse(self, response):
 		# Find the total number of pages in the result so that we can decide how many pages to scrape next

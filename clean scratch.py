@@ -1,54 +1,4 @@
-http://localhost:8888/notebooks/NYC%20Data%20Science%20Academy/NYCDSA%20Unit%205%20Data%20Analysis%20with%20Python/Introduction_to_Scrapy/intro%20to%20scrapy.ipynb
 
-1. cd C:\Users\asus\NYC Data Science Academy\NYCDSA Unit 5 Data Analysis with Python\Project 2 - Web Scraping
-scrapy startproject bestbuy
-
-2. drag folder into text editor
-
-3. update items.py, save
-
-import scrapy
-class NycdsaItem(scrapy.Item):  #each review is an instance of the bestbuyitem
-    # define the fields for your item here like:
-	category = scrapy.Field()
-	title = scrapy.Field()
-	author = scrapy.Field()
-	date = scrapy.Field()
-	excerpt = scrapy.Field()
-	shares = scrapy.Field()
-	link = scrapy.Field()
-
-4. create spider, create file called nycdsa_spider.py under nycdsa/spiders
-
-5. In bestbuy_spider.py, import the Spider class and the nycdsa class we defined earlier in items.py.
-from scrapy import Spider
-from bestbuy.items import BestbuyItem
-
-6. set up a scraping task in nycdsa_spider.py
-class NycdsaSpider(Spider):
-    name = 'nycdsa_spider'
-    allowed_urls = ['https://nycdatascience.com/']
-    start_urls = ['https://nycdatascience.com/blog/']
-    def parse(self, response):
-        pass
-
-		
-		
-start new anaconda prompt terminal # conda activate ipykernel_py3
-cd C:\Users\asus\NYC Data Science Academy\NYCDSA Unit 5 Data Analysis with Python\Project 2 - Web Scraping\nycdsa
-
-start scrapy shell:
-scrapy shell "https://nycdatascience.com/blog/" #200
-		
-7. explore the patterns in the URL (copy xpath)
-	category //*[@id="template-home-v2"]/div[2]/div[4]/div/div[2]/div[1]/div[1]/div[1]/a
-	title 
-	author 
-	date 
-	sypnosis 
-	shares 
-		
-		
 
 In [78]: response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div') #2 columns that i need
 In [78]: response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div' ) #1st column of 9 projects
@@ -64,13 +14,6 @@ div 4 = excerpt
 In [78]: response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[1]/a' ) 
 a 2 = title #a[2] but row[1] because rows are indexed from 0
 """
-
-rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[1]/a' ) #1st column of 9 projects
-row = rows[1]
-print (row)
-<Selector xpath='//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[1]/a' data='<a title="Characterising Culinary Footpr'>
-xtext = row.xpath('./@title')
-xtext.extract-first() #['Characterising Culinary Footprint of World Cuisines']
 
 In [78]: response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[x]') # x = 1 and 2  for the 2 columns that i need
 	In [78]: response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[1]/a' ) #1st column of 9 projects
@@ -94,46 +37,48 @@ In [78]: response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/di
 	def parse(self, response):
 		for num in [1,2]: #blog column 1 and 2
 			rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[%d]/div' %num) #for row in rows, [1] to [9] #this gets the first row
-			pattern = './a[2]/@title' #or a/@title
+			tpattern = './a[2]/@title' ########## title (a/@title)
+			apattern = './div/a/text()' ######### author
+			cpattern = './div/a/text()' ######### category
+			lpattern = './div/a/@href' ######### link
+			epattern = './div/text()' ######### excerpt
+			dpattern = './div/text()' ######### date
 			for row in rows:
-				title = row.xpath(pattern).extract_first()
+				title = row.xpath(tpattern).extract_first()
 				print (title)
+				author = row.xpath(apattern).extract()[0]
+				print (author)
+				category = row.xpath(cpattern).extract()[1]
+				print (category)
+				link = row.xpath(lpattern).extract()[2]
+				print (link)
+				excerpt = row.xpath(epattern).extract()[2]
+				print (excerpt)
+				date = row.xpath(dpattern).extract()[1]
+				print (date)
 
 		item = NycdsaItem()
-		item['title'] = title	
+		item['title'] = title
+		item['author'] = author
+		item['category'] = category
+		item['link'] = link
+		item['excerpt'] = excerpt
+		item['date'] = date
 		yield item 
 
+
+
+
 ########## for more items                                                      %d....[1-9]
+
 #rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[1]/div' )
 rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[1]')
-In [67]: rows.xpath('./div')
-Out[67]:
-[<Selector xpath='./div' data='<div class="content-category"><a class="'>,
- <Selector xpath='./div' data='<div class="content-authors lato bold fs'>,
- <Selector xpath='./div' data='<div class="content-date">Sep 26, 2018</'>,
- <Selector xpath='./div' data='<div class="content-excerpt fs13 lh19 gr'>,
- <Selector xpath='./div' data='<div class="content-link"><a href="https'>]
 
-In [68]: rows.xpath('./div/a')
-Out[68]:
-[<Selector xpath='./div/a' data='<a class="aqua-text" href="https://nycda'>,
- <Selector xpath='./div/a' data='<a href="https://nycdatascience.com/blog'>,
- <Selector xpath='./div/a' data='<a href="https://nycdatascience.com/blog'>]
+In [119]: rows.xpath('./a[2]/@title').extract_first() ######### title
+Out[119]: 'Characterising Culinary Footprint of World Cuisines'
 
-In [69]: rows.xpath('./div/a').extract()
-Out[69]:
-['<a class="aqua-text" href="https://nycdatascience.com/blog/category/student-works/r-shiny/">R Shiny</a>',
- '<a href="https://nycdatascience.com/blog/author/lavanya/" title="Posts by Lavanya Gupta" class="author url fn" rel="author">Lavanya Gupta</a>',
- '<a href="https://nycdatascience.com/blog/student-works/characterising-the-culinary-footprint-of-world-cuisines/">Read More</a>']
-
-In [92]: rows.xpath('./div/a/text()')
-Out[92]:
-[<Selector xpath='./div/a/text()' data='R Shiny'>,
- <Selector xpath='./div/a/text()' data='Lavanya Gupta'>,
- <Selector xpath='./div/a/text()' data='Read More'>]
- 
-In [70]: rows.xpath('./div/a/text()').extract()
-Out[70]: ['R Shiny', 'Lavanya Gupta', 'Read More']
+#In [70]: rows.xpath('./div/a/text()').extract()
+#Out[70]: ['R Shiny', 'Lavanya Gupta', 'Read More']
 
 In [97]: rows.xpath('./div/a/text()').extract()[0] ######### author
 Out[97]: 'R Shiny'
@@ -149,16 +94,6 @@ Out[111]: '\r\n                                    Motivation We all love food; 
 
 In [112]: rows.xpath('./div/text()').extract()[1] ######### date
 Out[112]: 'Sep 26, 2018'
-
-
-#In [115]: rows.xpath('./div[3]')
-#Out[115]: [<Selector xpath='./div[3]' data='<div class="content-date">Sep 26, 2018</'>]
-
-#In [116]: rows.xpath('./div[3]/text()')
-#Out[116]: [<Selector xpath='./div[3]/text()' data='Sep 26, 2018'>]
-
-#In [117]: rows.xpath('./div[3]/text()').extract()
-#Out[117]: ['Sep 26, 2018']
 
 #In [118]: rows.xpath('./div[3]/text()').extract_first()
 #Out[118]: 'Sep 26, 2018'
@@ -193,27 +128,11 @@ Out[31]:
  <Selector xpath='./@class' data='content-authors lato bold fs14'>,
  <Selector xpath='./@class' data='content-date'>,
  <Selector xpath='./@class' data='content-excerpt fs13 lh19 gray-text3'>,
- <Selector xpath='./@class' data='content-link'>]		
+ <Selector xpath='./@class' data='content-link'>]
 
 		
 new anaconda prompt, cd into folder with scrapy.cfg. 
 scrapy crawl nycdsa_spider
-
-	
-	
-#####
-In [127]: rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[1]/a[2]')
-In [128]: rows.extract()
-Out[128]: ['<a title="Characterising Culinary Footprint of World Cuisines" href="https://nycdatascience.com/blog/student-works/characterising-the-culinary-footprint-of-world-cuisines/" class="fs18 lh24 bold dark-gray-text content-title">\r\n
- Footprint of World Cuisines                                </a>']
-
-In [129]: rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[1]/a[2]/@title')
-In [130]: rows.extract()
-Out[130]: ['Characterising Culinary Footprint of World Cuisines']
-
-
-
-
 
 
 #############################################################################################################
