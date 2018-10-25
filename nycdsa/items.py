@@ -15,5 +15,5 @@ class NycdsaItem(scrapy.Item):
 	author = scrapy.Field()
 	date = scrapy.Field()
 	excerpt = scrapy.Field()
-	shares = scrapy.Field()
+	#shares = scrapy.Field()
 	link = scrapy.Field()

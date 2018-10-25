@@ -7,42 +7,109 @@ class NycdsaSpider(Spider):
 	name = 'nycdsa_spider'
 	allowed_urls = ['https://nycdatascience.com/']
 	start_urls = ['https://nycdatascience.com/blog/']
+	#handle_httpstatus_list = [301]
 	
 	def parse(self, response):
-		for num in [1,2]: #blog column 1 and 2
-			rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[1]/div[%d]'%num) #for row in rows, [1] to [9] #this gets the first row
-			pattern = './a[2]/@title' #or a/@title
-			for row in rows:
-				title = row.xpath(pattern).extract_first()
-				print (title)
-
-		item = NycdsaItem()
-		item['title'] = title	
-		yield item 
-"""
-	def parse(self, response):
-		# Find the total number of pages in the result so that we can decide how many pages to scrape next
-		text = response.xpath('//div[@class="left-side"]/span/text()').extract_first()
-		num_pages = int(re.findall('\d+', text)[-1])//24+1
-		#_, per_page, total = map(lambda x: int(x), re.findall('\d+', text))
-		#num_pages = total // per_page
-		# List comprehension to construct all the urls
-		result_urls = ['https://www.bestbuy.com/site/all-laptops/pc-laptops/pcmcat247400050000.c?cp={}&id=pcmcat247400050000'.format(x) for x in range(1,num_pages+1)]
-		# Yield the requests to different search result urls, 
-		# using parse_result_page function to parse the response.
-		for url in result_urls[:2]:
-			yield Request(url=url, callback=self.parse_result_page)
 		
+		for num in [1,2]: #blog column 1 and 2
+			rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[4]/div/div[2]/div[%d]/div' %num) #for row in rows, [1] to [9] #this gets the first row
+			tpattern = './a[2]/@title' ########## title (a/@title)
+			apattern = './div/a/text()' ######### author
+			cpattern = './div[1]/a/text()' ######### category
+			lpattern = './div[5]/a/@href' ######### link , rows.xpath('./div[5]/a/@href').extract_first()
+			epattern = './div[4]/text()' ######### excerpt
+			dpattern = './div[3]/text()' ######### date
+
+			for row in rows:
+				title = row.xpath(tpattern).extract_first()
+				print (title)
+				
+				alines = row.xpath(apattern)
+				author = []
+				for line in range(1,len(alines)-1):
+					alist= row.xpath(apattern).extract()[line]
+					author.append(alist)
+				print (author)
+					
+				category = row.xpath(cpattern).extract_first()
+				print (category)
+				
+				link = row.xpath(lpattern).extract_first()
+				print (link)
+				
+				excerpt = row.xpath(epattern).extract_first()
+				excerpt = excerpt.strip()
+				print (excerpt)
+				
+				date = row.xpath(dpattern).extract_first()
+				print (date)
+				print ("#"*50)
+
+				item = NycdsaItem()
+				item['title'] = title
+				item['author'] = author
+				item['category'] = category
+				item['link'] = link
+				item['excerpt'] = excerpt
+				item['date'] = date
+				yield item 
+		
+		x = 5
+		
+		result_urls = ('https://nycdatascience.com/blog/page/%d/'%x)
+		yield Request(url=result_urls, callback=self.parse_result_page) #, meta = {'dont_redirect': True}) 
+			
+
+		#result_urls = ['https://nycdatascience.com/blog/page/{}/'.format(x) for x in range(2,88)] #https://nycdatascience.com/blog/page/87/
+		#for url in result_urls: #page 2 to 87 from result_urls
+		#	yield Request(url=url, callback=self.parse_result_page) 
+		
+#################################################################parse_result_page
 	def parse_result_page(self, response):
-	# This fucntion parses the search result page.
-	# We are looking for url of the detail page.
-		detail_urls = response.xpath('//div[@class="sku-title"]/h4/a/@href').extract()
-		print(len(detail_urls))
-		print('=' * 50)  #first middle way checkpoint
-		# Yield the requests to the details pages, 
-		# using parse_detail_page function to parse the response.
-		for url in detail_urls:
-			yield Request(url=url, callback=self.parse_detail_page)
+		for num in [1,2]: #blog column 1 and 2
+			rows = response.xpath('//*[@id="template-home-v2"]/div[1]/div[3]/div/div[2]/div[%d]/div'%num)
+			tpattern = './a[2]/@title' ########## title (a/@title)
+			apattern = './div/a/text()' ######### author
+			cpattern = './div[1]/a/text()' ######### category  rows.xpath('./div[1]/a/text()').extract_first()
+			lpattern = './div[5]/a/@href' ######### link rows.xpath('./div[5]/a/@href').extract_first()
+			epattern = './div[4]/text()' ######### excerpt
+			dpattern = './div[3]/text()' ######### date
+			for row in rows:
+				title = row.xpath(tpattern).extract_first() ########## title
+				#print (title)
+				
+				alines = row.xpath(apattern) ######### author 
+				author = []
+				for line in range(1,len(alines)-1):
+					alist= row.xpath(apattern).extract()[line]
+					author.append(alist)
+				#print (author)
+					
+				category = row.xpath(cpattern).extract_first() ######### category
+				#print (category)
+				
+				link = row.xpath(lpattern).extract_first()
+				#print (link)
+					
+				excerpt = row.xpath(epattern).extract_first() ######### excerpt
+				excerpt = excerpt.strip() #.replace("\r\n","")
+				#print (excerpt)
+				
+				date = row.xpath(dpattern).extract_first() ######### date
+				#print (date)
+				#print ("#"*50)
+
+				item = NycdsaItem()
+				item['title'] = title
+				item['author'] = author
+				item['category'] = category
+				item['link'] = link
+				item['excerpt'] = excerpt
+				item['date'] = date
+				yield item 
+	
+"""
+#DOWNLOAD_DELAY = 10
 		
 	def parse_detail_page(self, response):
 	# This fucntion parses the product detail page.

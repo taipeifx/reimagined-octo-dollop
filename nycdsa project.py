@@ -1,4 +1,8 @@
-http://localhost:8888/notebooks/NYC%20Data%20Science%20Academy/NYCDSA%20Unit%205%20Data%20Analysis%20with%20Python/Introduction_to_Scrapy/intro%20to%20scrapy.ipynb
+http://localhost:8888/notebooks/NYC%20Data%20Science%20Academy/NYCDSA%20Unit%205%20Data%20Analysis%20with%20Python/Project%202%20-%20Web%20Scraping/nycdsa/intro%20to%20scrapy-Copy1.ipynb
+for git : cd C:\Users\asus\NYC Data Science Academy\NYCDSA Unit 5 Data Analysis with Python\Project 2 - Web Scraping\nycdsa
+
+scrapy shell "https://nycdatascience.com/blog/" #200
+scrapy crawl nycdsa_spider
 
 1. cd C:\Users\asus\NYC Data Science Academy\NYCDSA Unit 5 Data Analysis with Python\Project 2 - Web Scraping
 scrapy startproject bestbuy
@@ -317,10 +321,75 @@ response.xpath('//div[@class="see-all-reviews-button-container"]/a/@href').extra
 		
 		
 		
-		
-		
-		
-		
-		
-		
+#############################################################################################################
+#############################################################################################################
+############################################################################################################# pipeline.py
+#pipelines.py
+# -*- coding: utf-8 -*-
+
+# Define your item pipelines here
+#
+# Don't forget to add your pipeline to the ITEM_PIPELINES setting
+# See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
+
+
+from scrapy.exceptions import DropItem
+from scrapy.exporters import CsvItemExporter
+
+class ValidateItemPipeline(object):
+
+    def process_item(self, item, spider):
+        if not all(item.values()):
+            raise DropItem("Missing values!")
+        else:
+            return item
+
+class WriteItemPipeline(object):
+
+    def __init__(self):
+        self.filename = 'academy_awards.csv'
+
+    def open_spider(self, spider):
+        self.csvfile = open(self.filename, 'wb')
+        self.exporter = CsvItemExporter(self.csvfile)
+        self.exporter.start_exporting()
+
+    def close_spider(self, spider):
+        self.exporter.finish_exporting()
+        self.csvfile.close()
+
+    def process_item(self, item, spider):
+        self.exporter.export_item(item)
+        return item
+#next edit settings.py
+#then, ready to deploy spider
+
+#settings.py
+ITEM_PIPELINES = {'nycdsa.pipelines.ValidateItemPipeline': 100, #smaller number -> higher priority
+					'nycdsa.pipelines.WriteItemPipeline': 200}
+#############################################################################################################
+#############################################################################################################
+#############################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		
