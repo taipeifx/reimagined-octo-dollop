@@ -1,8 +1,12 @@
 http://localhost:8888/notebooks/NYC%20Data%20Science%20Academy/NYCDSA%20Unit%205%20Data%20Analysis%20with%20Python/Project%202%20-%20Web%20Scraping/nycdsa/intro%20to%20scrapy-Copy1.ipynb
+
+conda activate ipykernel_py3 
 for git : cd C:\Users\asus\NYC Data Science Academy\NYCDSA Unit 5 Data Analysis with Python\Project 2 - Web Scraping\nycdsa
 
 scrapy shell "https://nycdatascience.com/blog/" #200
 scrapy crawl nycdsa_spider
+
+
 
 1. cd C:\Users\asus\NYC Data Science Academy\NYCDSA Unit 5 Data Analysis with Python\Project 2 - Web Scraping
 scrapy startproject bestbuy

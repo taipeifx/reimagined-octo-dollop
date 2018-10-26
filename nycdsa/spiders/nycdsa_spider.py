@@ -44,7 +44,9 @@ class NycdsaSpider(Spider):
 				date = row.xpath(dpattern).extract_first()
 				print (date)
 				print ("#"*50)
-
+				
+				print (response)
+				
 				item = NycdsaItem()
 				item['title'] = title
 				item['author'] = author
@@ -52,17 +54,18 @@ class NycdsaSpider(Spider):
 				item['link'] = link
 				item['excerpt'] = excerpt
 				item['date'] = date
+				item['page'] = response
 				yield item 
 		
-		x = 5
+		result_urls = ['https://nycdatascience.com/blog/page/{}/'.format(x) for x in range(2,88)]#88)] #https://nycdatascience.com/blog/page/87/
+		for url in result_urls: #page 2 to 87 from result_urls
+			yield Request(url=url, callback=self.parse_result_page) 
 		
-		result_urls = ('https://nycdatascience.com/blog/page/%d/'%x)
-		yield Request(url=result_urls, callback=self.parse_result_page) #, meta = {'dont_redirect': True}) 
-			
-
-		#result_urls = ['https://nycdatascience.com/blog/page/{}/'.format(x) for x in range(2,88)] #https://nycdatascience.com/blog/page/87/
-		#for url in result_urls: #page 2 to 87 from result_urls
-		#	yield Request(url=url, callback=self.parse_result_page) 
+		#x = 2
+		#while x < 87:
+		#	result_urls = ('https://nycdatascience.com/blog/page/%d/'%x)
+		#	yield Request(url=result_urls, callback=self.parse_result_page) #, meta = {'dont_redirect': True}) 
+		#	x = x+1
 		
 #################################################################parse_result_page
 	def parse_result_page(self, response):
@@ -98,7 +101,9 @@ class NycdsaSpider(Spider):
 				date = row.xpath(dpattern).extract_first() ######### date
 				#print (date)
 				#print ("#"*50)
-
+				
+				
+				
 				item = NycdsaItem()
 				item['title'] = title
 				item['author'] = author
@@ -106,6 +111,7 @@ class NycdsaSpider(Spider):
 				item['link'] = link
 				item['excerpt'] = excerpt
 				item['date'] = date
+				item['page'] = response
 				yield item 
 	
 """

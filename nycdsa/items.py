@@ -17,3 +17,4 @@ class NycdsaItem(scrapy.Item):
 	excerpt = scrapy.Field()
 	#shares = scrapy.Field()
 	link = scrapy.Field()
+	page = scrapy.Field()
