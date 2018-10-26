@@ -74,7 +74,8 @@ class BlogSpider(Spider):
 		title = response.meta['t']
 		link = response.meta['l']
 		resp = response.meta['r']
-		post = response.xpath('//div[contains(@class, "the-content")]/p/text()').extract()
+		#post = response.xpath('//div[contains(@class, "the-content")]/p/text()').extract()
+		post = response.xpath('//div[contains(@class, "the-content")]/p/span/text()').extract() #2nd extract
 		item = BlogItem()
 		item['title'] = title
 		item['link'] = link
@@ -86,6 +87,8 @@ class BlogSpider(Spider):
 # In [6]: response.xpath('//div[contains(@class, "the-content")]/p/text()').extract() #content post 
 #clean the data of \n , \xa0
 #excerpt = excerpt.strip()
+
+#In [10]: response.xpath('//div[contains(@class, "the-content")]/p/span/text()').extract() #rescrape using this 
 """
 #DOWNLOAD_DELAY = 10
 		
