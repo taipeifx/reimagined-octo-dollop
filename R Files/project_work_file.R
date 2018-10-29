@@ -1,5 +1,13 @@
 setwd("C:/Users/asus/NYC Data Science Academy/NYCDSA Unit 5 Data Analysis with Python/Project 2 - Web Scraping/nycdsa/R Files")
-working_data_merged = read_csv("working_data_merged.csv")
+library(readr)
+library(dplyr)
+
+working_data_merged = read_csv("working_data_merged.csv", col_types =cols(category = col_factor(NULL)))
+filter(working_data_merged, working_data_merged$page == 64) 
+filter(working_data_merged, page > 6)
+working_data_merged$category 
+
+table(working_data_merged)
 
 blog_ = read_csv("blog_post_clean.csv")
 blog_2 = read_csv("blog_post_2_clean.csv")
@@ -26,7 +34,12 @@ write_csv(working_data, "working_data.csv")
 working_data_merged = unite(data = working_data, col = post1, c(7,8), sep = ":", remove = T)
 working_data_merged = unite(data = working_data_merged, col = post, c(1,7), sep = ": ", remove = F)
 working_data_merged = working_data_merged[-8]
-  
+class(working_data_merged$date)
+
+library(anytime)
+working_data_merged$date = anytime(working_data_merged$date)
+
+
 ############################################## timevis
 install.packages("timevis")
 library(timevis) #https://daattali.com/shiny/timevis-demo/
@@ -44,7 +57,7 @@ data <- na.omit(data.frame(
 timevis(data, )
 ?timevis
 #
-
+working_data_merged$category <- as.factor(working_data_merged$category)
 b = 1:length(working_data_merged$post)
 b[]= "NA"
 data <- na.omit(data.frame(
@@ -55,8 +68,12 @@ data <- na.omit(data.frame(
   end     = b
 ))
 
-timevis(data, 
-        groups =  data.frame (id = levels(working_data_merged$category), content = levels(working_data_merged$category)))
+timevis(data, groups = data.frame (
+  id = levels(working_data_merged$category), 
+  content = levels(working_data_merged$category)))
+
+working_data_merged$date[1:3]+1
+working_data_merged$end = NA
 #
 add table. group by month, show category posts?  
 https://shiny.rstudio.com/gallery/datatables-options.html
@@ -70,7 +87,8 @@ timevis(data = data.frame(
   start = c(Sys.Date(), Sys.Date(), Sys.Date() + 1, Sys.Date() + 2),
   content = c("one", "two", "three", "four"),
   group = c(1, 2, 1, 2)),
-  groups = data.frame(id = 1:2, content = c("G1", "G2"))
+  groups = data.frame(id = 1:2, content = c("G1", "G2"),
+                      showZoom = TRUE, zoomFactor = 0.5)
 )
 
 
@@ -102,8 +120,58 @@ class(working_data_merged$date)
 type(working_data_merged$date)
 
 working_data_merged$date[969] = "2015-02-28"
-write_csv(working_data_merged, "working_data_merged.csv")
+write_csv(working_data_merged, "working_data_merged_time.csv")
 ###############################################
+a = sample(0:23,1215,replace=T)
+b = sample(0:59,1215,replace=T)
+c = sample(0:59,1215,replace=T,)
+
+a = data.frame(a, b, c)
+library(tidyr)
+b = unite(data = a, col = end, c(1,2), sep = ":",remove = T)
+c = unite(data = b, col = end, c(1,2), sep = ":",remove = T)
+c = as.list(c)
+anytime(working_data_merged$date)
+as.POSIXct(c)
+as.POSIXlt(c$end[3])
+c[[1]]
+working_data_merged = unite(data = working_data, col = post1, c(7,8), sep = ":", remove = T)
+
+
+c$end <- sub(":1:", ':01:', c$end)
+c$end <- sub(":2:", ':01:', c$end)
+c$end <- sub(":3:", ':01:', c$end)
+c$end <- sub(":4:", ':01:', c$end)
+c$end <- sub(":5:", ':01:', c$end)
+c$end <- sub(":6:", ':01:', c$end)
+c$end <- sub(":7:", ':01:', c$end)
+c$end <- sub(":8:", ':01:', c$end)
+c$end <- sub(":9:", ':01:', c$end)
+c$end <- sub(":1:", ':01:', c$end)
+
+
+c$end <- sub(":6$", ':06', c$end)
+c$end <- sub(":1$", ':01', c$end)
+c$end <- sub(":2$", ':02', c$end)
+c$end <- sub(":3$", ':03', c$end)
+c$end <- sub(":4$", ':04', c$end)
+c$end <- sub(":5$", ':05', c$end)
+c$end <- sub(":6$", ':06', c$end)
+c$end <- sub(":7$", ':07', c$end)
+c$end <- sub(":8$", ':08', c$end)
+c$end <- sub(":9$", ':09', c$end)
+c$end <- sub(":0$", ':00', c$end)
+
+c$end <- sub("^0:", '00:', c$end)
+c$end <- sub("^1:", '01:', c$end)
+c$end <- sub("^2:", '02:', c$end)
+c$end <- sub("^3:", '03:', c$end)
+c$end <- sub("^4:", '04:', c$end)
+c$end <- sub("^5:", '05:', c$end)
+c$end <- sub("^6:", '06:', c$end)
+c$end <- sub("^7:", '07:', c$end)
+c$end <- sub("^8:", '08:', c$end)
+c$end <- sub("^9:", '09:', c$end)
 
 
 
@@ -111,14 +179,18 @@ write_csv(working_data_merged, "working_data_merged.csv")
 
 
 
+working_data_merged$end = c[[1]]
+working_data_merged = unite(data = working_data_merged, col = date, c(7,8), sep = " ",remove = T)
 
+working_data_merged = working_data_merged[-8]
 
-
-
-
-
-
-
+working_data_merged$end
+colnames(working_data_merged)[8] = "hello"
+class(working_data_merged$date)
+library(lubridate)
+x = working_data_merged$date[6]
+x + hours(3)
+working_data_merged$end = working_data_merged$date + hours(6)
 
 ########################################################### added two posts below, and rewrite merged_posts_only.csv  , write_csv(blog_merge, "merged_posts_only.csv")
 rownames(blog_merge) <- NULL
