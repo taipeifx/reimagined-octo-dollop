@@ -4,11 +4,36 @@ library(dplyr)
 
 working_data_merged = read_csv("working_data_merged.csv", col_types =cols(category = col_factor(NULL)))
 
+#lda = read_csv("csvfile.csv", col_names = FALSE, col_types = NULL)
+lda = read.csv("csvfile.csv", header = FALSE, col.names = c("Topic","Topic","Topic","Topic","Topic",
+                                                             "Topic","Topic","Topic","Topic","Topic"))
+print (lda[1:10,])
+
+class(lda) #dataframe
+
+#clean
+lda$Topic <- sub("\\[", "", lda$Topic)
+lda$Topic.9 <- sub("\\]", "", lda$Topic.9)
+lda$Topic = as.numeric(lda$Topic)
+lda$Topic.9 = as.numeric(lda$Topic.9)
+
+is.num <- sapply(lda, is.numeric)
+lda[is.num] <- lapply(lda[is.num], round, 5)
+
+print (lda[1:3,])
+
+a = lda[1,]
+data.frame(a,check.names = F)
+
+
+write_csv(lda, "interactive_lda.csv")
+lda = read_csv("interactive_lda.csv")
+
 
 filter(working_data_merged, working_data_merged$page == 64) 
 filter(working_data_merged, page > 6)
 
-
+library(DT)
 ######################################################################### NLP (python)
 clean posts
 use Text Classification #sentiment analysis, supervised learning 
@@ -23,7 +48,7 @@ lda[1:5]
 write_csv(lda, "lda.csv")
 
 
-
+lda[1,]
 
 
 

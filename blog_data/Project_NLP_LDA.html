@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="NYCDSA-Blog-Post-Data--Natural-Language-Processing">NYCDSA Blog Post Data- Natural Language Processing<a class="anchor-link" href="#NYCDSA-Blog-Post-Data--Natural-Language-Processing">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Objectives:</strong></p>
+<ol>
+<li>Load and Clean Dataset for a WordCloud.</li>
+<li>Use Latent Dirichlet Allocation (LDA) to group the blog posts into topics, not necessarily their original categories but maybe topics such as politics, sports, technology etc.</li>
+<li>Further Study: Perform Text Classification to see if it is possible to group a blog post from category "Student Works" into a more specific category such as R, Web Scraping, Machine Learning etc.</li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>The NYCDSA Blog Post dataset used here "lda.csv" was web scraped from <a href="https://nycdatascience.com/blog/">https://nycdatascience.com/blog/</a> on Oct 26, 2018. </li>
+<li>The following code was written in python 2</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Objective-2.-Latent-Dirichlet-Allocation-(LDA)">Objective 2. Latent Dirichlet Allocation (LDA)<a class="anchor-link" href="#Objective-2.-Latent-Dirichlet-Allocation-(LDA)">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>LDA is an unsupervised method that allows sets of observations to be explained by unobserved groups that explain why some parts of the data are similar.</li>
+</ul>
+<h3 id="Steps:">Steps:<a class="anchor-link" href="#Steps:">&#182;</a></h3><ul>
+<li>Extract term frequency feature from the corpus (NYCDSA Blog Data).</li>
+<li>Fit the LDA model, return the topics, and then inspect each topic (a topic is a common latent variable produced by LDA and used to characterize a document)</li>
+<li>Finally we inspect the relation between the topics and the particular documents.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># the following was done in python 2</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">CountVectorizer</span> <span class="c1">#counting object</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">LatentDirichletAllocation</span> <span class="c1">#train lda</span>
+
+<span class="k">def</span> <span class="nf">print_top_words</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">,</span> <span class="n">n_top_words</span><span class="p">):</span> <span class="c1">#print most freq words</span>
+    <span class="k">for</span> <span class="n">topic_idx</span><span class="p">,</span> <span class="n">topic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">components_</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Topic #</span><span class="si">%d</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="n">topic_idx</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">feature_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">topic</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[:</span><span class="o">-</span><span class="n">n_top_words</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]))</span>
+        <span class="k">print</span>
+        
+<span class="c1">#from before, df = pd.read_csv(&#39;lda.csv&#39;) </span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;lda.csv&#39;</span><span class="p">)</span>  
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">df</span> 
+<span class="n">data_samples</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">post</span>
+
+<span class="n">n_features</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="c1">#n_topics, number of topics = 10  </span>
+<span class="c1">#n_top_words, top words defining each topic = 20</span>
+
+<span class="n">tf_vectorizer</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">(</span><span class="n">max_df</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">min_df</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="n">n_features</span><span class="p">,</span>  <span class="c1">#specify rules</span>
+                                <span class="n">stop_words</span><span class="o">=</span><span class="s1">&#39;english&#39;</span><span class="p">)</span>
+
+<span class="n">tf</span> <span class="o">=</span> <span class="n">tf_vectorizer</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data_samples</span><span class="p">)</span> 
+
+<span class="nb">type</span><span class="p">(</span><span class="n">tf</span><span class="p">)</span> <span class="c1">#sparse matrix, matrix with a lot of 0&#39;s &lt;class &#39;scipy.sparse.csr.csr_matrix&#39;&gt;, only record value of non-0s positions</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span> <span class="c1">#&lt;type &#39;numpy.ndarray&#39;&gt;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[6]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>numpy.ndarray</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[80]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="n">tf</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span> <span class="c1">#each row is a document , each column is a word (top 1000 words)</span>
+<span class="k">print</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">88</span>
+
+<span class="k">print</span> <span class="n">tf</span><span class="o">.</span><span class="n">toarray</span><span class="p">()[</span><span class="mi">958</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">200</span><span class="p">]</span> <span class="c1">#shows article 958, words 0:200, after applying tf_vectorizer.fit_transform()</span>
+<span class="k">print</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">88</span>
+
+<span class="k">print</span> <span class="n">tf_vectorizer</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">()[</span><span class="mi">50</span><span class="p">:</span> <span class="mi">75</span><span class="p">]</span> <span class="c1">#words 50 - 75, found by vectorizor</span>
+<span class="k">print</span> <span class="n">tf_vectorizer</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">()[</span><span class="mi">975</span><span class="p">:</span> <span class="mi">1000</span><span class="p">]</span> <span class="c1">#words 975 - 1000, when we specified max_features</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(1215L, 1000L)
+----------------------------------------------------------------------------------------
+[1 0 0 2 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 1 0 0 0 0 0 0 0 3 0 1 1
+ 0 0 0 0 0 0 0 0 0 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 1 0 0 0
+ 0 0 0 1 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 2 0 0 0
+ 0 0 0 3 0 0 0 0 0 0 1 1 0 0 4 0 0 0 0 0 2 5 5 0 2 0 0 0 0 0 0 0 0 0 0 1 0
+ 0 0 0 0 0 0 0 0 0 2 1 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0]
+----------------------------------------------------------------------------------------
+[u&#39;american&#39;, u&#39;ams&#39;, u&#39;analysis&#39;, u&#39;analytics&#39;, u&#39;analyze&#39;, u&#39;analyzing&#39;, u&#39;annual&#39;, u&#39;answer&#39;, u&#39;api&#39;, u&#39;app&#39;, u&#39;appear&#39;, u&#39;appears&#39;, u&#39;application&#39;, u&#39;applications&#39;, u&#39;applied&#39;, u&#39;apply&#39;, u&#39;approach&#39;, u&#39;approximately&#39;, u&#39;apps&#39;, u&#39;april&#39;, u&#39;area&#39;, u&#39;areas&#39;, u&#39;article&#39;, u&#39;articles&#39;, u&#39;artists&#39;]
+[u&#39;went&#39;, u&#39;white&#39;, u&#39;wide&#39;, u&#39;win&#39;, u&#39;wine&#39;, u&#39;wines&#39;, u&#39;winning&#39;, u&#39;women&#39;, u&#39;word&#39;, u&#39;words&#39;, u&#39;work&#39;, u&#39;worked&#39;, u&#39;working&#39;, u&#39;works&#39;, u&#39;workshop&#39;, u&#39;world&#39;, u&#39;worth&#39;, u&#39;xgboost&#39;, u&#39;yc&#39;, u&#39;year&#39;, u&#39;years&#39;, u&#39;yelp&#39;, u&#39;york&#39;, u&#39;zero&#39;, u&#39;zip&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[68]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_samples</span><span class="p">[</span><span class="mi">958</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">615</span><span class="p">]</span> <span class="c1">#my R Shiny Project</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[68]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;Taiwan Voting Data: Exploratory Visualization and Shiny Project - You will build an interactive Shiny application that can create visual representations...: You will build an interactive Shiny application that can create visual representations of data insights and trends.Visit my project here: : This was the first project I did at the YC Data Science Academy (Fall Cohort 2018). I browsed my way to  where they store a large variety of publicly shared data. I wanted to select a data set suitable for charting and mapping purposes. I also preferred to work with data which I had to translate from Mandarin Chinese&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Now we start to fit the LDA model:</span>
+<span class="n">n_topics</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">lda</span> <span class="o">=</span> <span class="n">LatentDirichletAllocation</span><span class="p">(</span><span class="n">n_topics</span><span class="o">=</span><span class="n">n_topics</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                                <span class="n">learning_method</span><span class="o">=</span><span class="s1">&#39;online&#39;</span><span class="p">,</span> <span class="n">learning_offset</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span>
+                                <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">lda</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">tf</span><span class="p">)</span>
+
+<span class="c1">#lda.components_ </span>
+
+<span class="c1">#lda.components_.shape</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>C:\Users\asus\Anaconda2\lib\site-packages\sklearn\decomposition\online_lda.py:294: DeprecationWarning: n_topics has been renamed to n_components in version 0.19 and will be removed in 0.21
+  DeprecationWarning)
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[9]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>LatentDirichletAllocation(batch_size=128, doc_topic_prior=None,
+             evaluate_every=-1, learning_decay=0.7,
+             learning_method=&#39;online&#39;, learning_offset=50.0,
+             max_doc_update_iter=100, max_iter=5, mean_change_tol=0.001,
+             n_components=10, n_jobs=1, n_topics=10, perp_tol=0.1,
+             random_state=0, topic_word_prior=None,
+             total_samples=1000000.0, verbose=0)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[83]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#lda.components_ </span>
+<span class="n">lda</span><span class="o">.</span><span class="n">components_</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[83]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(10L, 1000L)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">n_top_words</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Topics in LDA model:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1">#print_top_words</span>
+<span class="n">tf_feature_names</span> <span class="o">=</span> <span class="n">tf_vectorizer</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">()</span>
+<span class="n">print_top_words</span><span class="p">(</span><span class="n">lda</span><span class="p">,</span> <span class="n">tf_feature_names</span><span class="p">,</span> <span class="n">n_top_words</span><span class="p">)</span>
+
+<span class="c1">#each post will fall into a topic, read the topic words to see what the post might be about!</span>
+<span class="c1">#FYI, without stopwords: Topic #0: that we this on it for but are as movies user more be reviews with by there analysis rate can</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+Topics in LDA model:
+
+Topic #0:
+data science learning work job time use project academy people like yc using bootcamp python students machine really want just
+
+Topic #1:
+reviews rating ratings movie shows wine average movies music data review score number user artists complaints scores songs different higher
+
+Topic #2:
+data number time year years countries city ew population york world map people states state analysis country different shows dataset
+
+Topic #3:
+data app shiny user time information number map code based different tab health used project average job application chart salary
+
+Topic #4:
+price market sales prices fig airlines flight brands project category number brand average popular categories industry shot days apps projects
+
+Topic #5:
+stock games data performance analysis game correlation time model number used plot companies trading significant variables news stocks values words
+
+Topic #6:
+data crime school schools loan education rates car rate high house loans students price grade years higher credit student time
+
+Topic #7:
+team player players data game teams season win winning match statistics games field points performance use percentage home let results
+
+Topic #8:
+data words user used using users information project scraping time web page word reviews analysis number text website use restaurants
+
+Topic #9:
+model data models features variables set regression used feature training values learning dataset number test random using machine score variable
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[96]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="n">data_samples</span><span class="p">[</span><span class="mi">958</span><span class="p">]</span>
+
+<span class="k">print</span> <span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">615</span><span class="p">]</span>
+<span class="k">print</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">88</span>
+<span class="k">print</span> <span class="n">lda</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">tf</span><span class="p">[</span><span class="mi">958</span><span class="p">,:])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Taiwan Voting Data: Exploratory Visualization and Shiny Project - You will build an interactive Shiny application that can create visual representations...: You will build an interactive Shiny application that can create visual representations of data insights and trends.Visit my project here: : This was the first project I did at the YC Data Science Academy (Fall Cohort 2018). I browsed my way to  where they store a large variety of publicly shared data. I wanted to select a data set suitable for charting and mapping purposes. I also preferred to work with data which I had to translate from Mandarin Chinese
+----------------------------------------------------------------------------------------
+[[1.36030417e-01 1.96982420e-02 7.70709540e-02 7.65025867e-01
+  3.62418627e-04 3.62425841e-04 3.62396375e-04 3.62411829e-04
+  3.62429431e-04 3.62438249e-04]]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Top-3-Matches-for-my-blog-post-&quot;Taiwan-Voting-Data&quot;:">Top 3 Matches for my blog post "Taiwan Voting Data":<a class="anchor-link" href="#Top-3-Matches-for-my-blog-post-&quot;Taiwan-Voting-Data&quot;:">&#182;</a></h3><ul>
+<li><p>Topic #3: 0.765 : data app shiny user time information number map code based different tab health used project average job application chart salary</p>
+</li>
+<li><p>Topic #0: 0.136 : data science learning work job time use project academy people like yc using bootcamp python students machine really want just</p>
+</li>
+<li><p>Topic #2: 0.077 : data number time year years countries city ew population york world map people states state analysis country different shows dataset</p>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Further-study:-Text-Classification">Further study: Text Classification<a class="anchor-link" href="#Further-study:-Text-Classification">&#182;</a></h3><ul>
+<li>LDA topics contain words like "shiny" and "scraping". Might it be possible to use the topics to group unknown articles into categories?</li>
+<li>Either that or I would use Text Classification (sentiment analysis but with categories such as R, Python, Web Scraping, R Shiny). This would be a supervised learning method to teach the computer to recognize different blog post categories. </li>
+</ul>
+
+</div>
+</div>
+</div>
+    </div>
+  </div>
+</body>
+
+ 
+
+
+</html>
